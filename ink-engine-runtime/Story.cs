@@ -2592,6 +2592,9 @@ namespace Ink.Runtime
             List<string> tags = null;
             foreach (var c in flowContainer.content) {
 
+		// Fixing tags not supported in knots with parameters
+		var v = c as Runtime.VariableAssignment; if (v != null) { continue; }
+
                 var command = c as Runtime.ControlCommand;
                 if( command != null ) {
                     if( command.commandType == Runtime.ControlCommand.CommandType.BeginTag ) {
@@ -2607,8 +2610,18 @@ namespace Ink.Runtime
                         if( tags == null ) tags = new List<string>();
                         tags.Add(str.value);
                     } else {
-                        Error("Tag contained non-text content. Only plain text is allowed when using globalTags or TagsAtContentPath. If you want to evaluate dynamic content, you need to use story.Continue().");
-                    }
+			// Support for variables in main tags
+			var varRef = c as Runtime.VariableReference;
+			if (tags.Count > 0 && varRef != null)
+			{
+			    var foundValue = state.variablesState.GetVariableWithName(varRef.name);
+			    tags[tags.Count - 1] += foundValue.ToString(); // Append variable value to tag
+			}
+			else
+			{
+			    Error("Tag contained non-text content. Only plain text is allowed when using globalTags or TagsAtContentPath. If you want to evaluate dynamic content, you need to use story.Continue().");
+			}
+		    }
                 }
 
                 // Any other content - we're done
