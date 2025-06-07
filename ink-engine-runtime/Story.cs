@@ -2612,11 +2612,14 @@ namespace Ink.Runtime
                     } else {
 			// Support for variables in main tags
 			var varRef = c as Runtime.VariableReference;
-			if (tags.Count > 0 && varRef != null)
-			{
+		        if (tags != null && tags.Count > 0 && varRef != null)
+		        {
 			    var foundValue = state.variablesState.GetVariableWithName(varRef.name);
-			    tags[tags.Count - 1] += foundValue.ToString(); // Append variable value to tag
-			}
+			    if (foundValue != null)
+			    {
+			        tags[tags.Count - 1] += foundValue.ToString(); // Append variable value to tag
+			    }
+		        }
 			else
 			{
 			    Error("Tag contained non-text content. Only plain text is allowed when using globalTags or TagsAtContentPath. If you want to evaluate dynamic content, you need to use story.Continue().");
